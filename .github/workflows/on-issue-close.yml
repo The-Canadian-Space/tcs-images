@@ -20,3 +20,16 @@ jobs:
       issue_title: ${{ github.event.issue.title }}
       closed_by: ${{ github.event.sender.login }}
       state_reason: ${{ github.event.issue.state_reason }}
+
+  # tcs-docs#252: alert #🔴-workflow-errors when append-changelog fails. It's a
+  # separate job because call-append is a reusable-workflow call, which can't
+  # hold `steps:` (Pattern 3, shape B, in tcs-docs shared-gha-patterns.md).
+  notify:
+    needs: call-append
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/notify-discord-on-failure
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_WORKFLOW_ERRORS }}
